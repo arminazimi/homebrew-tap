@@ -60,14 +60,14 @@ jobs:
             git -C "$publish" checkout --orphan codex/225-badge-output
           fi
 
-          cp "$BADGE_PATH" "$publish/codex/225-badge-output.json"
+          cp "$BADGE_PATH" "$publish/evergreen-badge.json"
 
           git -C "$publish" config user.name github-actions[bot]
 
           git -C "$publish" config user.email
           41898282+github-actions[bot]@users.noreply.github.com
 
-          git -C "$publish" add codex/225-badge-output.json
+          git -C "$publish" add evergreen-badge.json
 
           if ! git -C "$publish" diff --cached --quiet; then
             git -C "$publish" commit -m "chore: update Evergreen badge"
