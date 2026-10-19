@@ -1,0 +1,33 @@
+name: Formula tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878
+      - name: Load the proposed formula
+        run: |
+          brew tap arminazimi/tap "$GITHUB_WORKSPACE"
+          if brew help trust >/dev/null 2>&1; then
+            brew trust --formula arminazimi/tap/evergreen
+          fi
+      - name: Check formula style
+        run: brew style arminazimi/tap/evergreen
+      - name: Install the published npm package
+        run: brew install --build-from-source arminazimi/tap/evergreen
+      - name: Test the installed commands and offline source scanning
+        run: brew test arminazimi/tap/evergreen
