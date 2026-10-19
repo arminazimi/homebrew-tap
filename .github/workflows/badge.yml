@@ -1,0 +1,75 @@
+name: Evergreen badge
+on:
+  push:
+    branches:
+      - codex/225-badge-smoke
+permissions:
+  contents: write
+concurrency:
+  group: evergreen-badge
+  cancel-in-progress: false
+jobs:
+  badge:
+    if: github.ref == 'refs/heads/codex/225-badge-smoke'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: arminazimi/evergreen@7cf6e9a9eacbdc9fe7e86016b7e764ab4230c1ee
+        id: scan
+        with:
+          upload-badge: true
+          path: fixture
+          fail-on-severity: medium
+        continue-on-error: true
+      - name: Verify expected failing scan still exposes badge output
+        env:
+          SCAN_OUTCOME: ${{ steps.scan.outcome }}
+          BADGE_PATH: ${{ steps.scan.outputs.badge-path }}
+        run: >-
+          test "$SCAN_OUTCOME" = failure
+
+          test -f "$BADGE_PATH"
+
+          node -e 'const
+          b=JSON.parse(require("fs").readFileSync(process.env.BADGE_PATH));
+          if(b.schemaVersion!==1 || b.message!=="1 finding (medium)" ||
+          b.color!=="orange") process.exit(1)'
+      - name: Publish aggregate badge data
+        if: always() && steps.scan.outputs.badge-path != ''
+        env:
+          BADGE_PATH: ${{ steps.scan.outputs.badge-path }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: >
+          publish=$(mktemp -d)
+
+          git init "$publish"
+
+          git -C "$publish" remote add origin
+          "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+
+          # GitHub CLI is preinstalled on ubuntu-latest.
+
+          gh auth setup-git
+
+          if git -C "$publish" ls-remote --exit-code --heads origin
+          codex/225-badge-output; then
+            git -C "$publish" fetch --depth=1 origin codex/225-badge-output
+            git -C "$publish" checkout -b codex/225-badge-output FETCH_HEAD
+          else
+            git -C "$publish" checkout --orphan codex/225-badge-output
+          fi
+
+          cp "$BADGE_PATH" "$publish/codex/225-badge-output.json"
+
+          git -C "$publish" config user.name github-actions[bot]
+
+          git -C "$publish" config user.email
+          41898282+github-actions[bot]@users.noreply.github.com
+
+          git -C "$publish" add codex/225-badge-output.json
+
+          if ! git -C "$publish" diff --cached --quiet; then
+            git -C "$publish" commit -m "chore: update Evergreen badge"
+            git -C "$publish" push origin HEAD:codex/225-badge-output
+          fi
