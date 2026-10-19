@@ -8,6 +8,7 @@ class Evergreen < Formula
   depends_on "node"
 
   def install
+    ENV["npm_config_cache"] = (buildpath/"npm-cache").to_s
     system "npm", "install", *std_npm_args
     bin.install_symlink libexec.glob("bin/*")
   end

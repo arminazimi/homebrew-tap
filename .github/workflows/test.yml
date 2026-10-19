@@ -21,7 +21,12 @@ jobs:
       - uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878
       - name: Load the proposed formula
         run: |
-          brew tap arminazimi/tap "$GITHUB_WORKSPACE"
+          brew tap arminazimi/tap
+          tap_dir="$(brew --repository arminazimi/tap)"
+          mkdir -p "$tap_dir/Formula"
+          if ! cmp -s "$GITHUB_WORKSPACE/Formula/evergreen.rb" "$tap_dir/Formula/evergreen.rb"; then
+            cp "$GITHUB_WORKSPACE/Formula/evergreen.rb" "$tap_dir/Formula/evergreen.rb"
+          fi
           if brew help trust >/dev/null 2>&1; then
             brew trust --formula arminazimi/tap/evergreen
           fi
