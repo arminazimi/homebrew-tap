@@ -1,8 +1,8 @@
 class Evergreen < Formula
   desc "Find evidence-backed deprecations and end-of-life dependencies"
   homepage "https://arminazimi.github.io/evergreen/"
-  url "https://registry.npmjs.org/evergreen-deprecation/-/evergreen-deprecation-0.4.0.tgz"
-  sha256 "bcac89e8a522779fca12870f517880f714da1dd34e5466d8b8dd540ccd901c1e"
+  url "https://registry.npmjs.org/evergreen-deprecation/-/evergreen-deprecation-0.7.1.tgz"
+  sha256 "3acc4fd1807eaab35e022f63c527f3693aa9de7d3bf05c58dec509ebf2bb9542"
   license "Apache-2.0"
 
   depends_on "node"
