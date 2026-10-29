@@ -1,0 +1,20 @@
+name: Evergreen
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: arminazimi/evergreen@v0.7.1
+        with:
+          baseline: .evergreen-baseline.json
+          fail-on-severity: high
